@@ -1,0 +1,33 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+RF24 radio(7, 8); // CNS, CE
+const byte addresses[][6] = {"00001", "00002"};
+char input='0';
+void setup() {
+  Serial.begin(9600);
+  radio.begin();
+  radio.openWritingPipe(addresses[0]); // 00002
+  radio.openReadingPipe(1, addresses[1]); // 00001
+  radio.setPALevel(RF24_PA_MIN);
+  
+}
+void loop() {
+  radio.startListening();
+  //Once message received turn off listening 
+  if (radio.available()) {
+    char text[32] = "";
+    radio.read(&text, sizeof(text));
+    Serial.println(text);
+    radio.stopListening();
+    Serial.println("Enter 1 for more info on threat, 2 to remove threat and 3 to remove all threats");
+    if(Serial.available()){
+      input=Serial.read();
+      Serial.print("You entered: ");
+      Serial.println(input,DEC);
+      radio.write(&input, sizeof(input));
+    }
+  }
+  
+
+}
